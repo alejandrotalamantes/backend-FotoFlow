@@ -15,7 +15,11 @@ const server = http.createServer(app);
 const { initSocket, joinRoom } = require('./socket'); // <-- asegúrate de importar joinRoom
 
 const io = new Server(server, {
-  cors: { origin: '*' },
+  cors: {
+    origin: 'https://photobooth.soluciomax.com',
+    methods: ['GET', 'POST'],
+    credentials: true,
+  },
 });
 
 io.on('connection', (socket) => {
@@ -29,7 +33,12 @@ io.on('connection', (socket) => {
 
 initSocket(io);
 
-app.use(cors());
+app.use(cors({
+  origin: 'https://photobooth.soluciomax.com',
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  credentials: true,
+}));
+
 app.use(express.json());
 app.use(fileUpload());
 app.use('/api', routes);
