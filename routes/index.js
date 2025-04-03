@@ -48,7 +48,7 @@ router.post('/usuarios', async (req, res) => {
 
 // Obtener todos los usuarios (solo superadmin)
 router.get('/usuarios', verifyToken, requireSuperadmin, async (req, res) => {
-  const usuarios = await User.findAll({ attributes: ['id', 'nombre', 'email', 'rol', 'linkId', 'createdAt'] });
+  const usuarios = await User.findAll({ attributes: ['id', 'nombre', 'email', 'rol', 'linkId', 'token','createdAt'] });
   res.json({ usuarios });
 });
 
