@@ -149,6 +149,18 @@ router.delete('/foto/:id', verifyToken, async (req, res) => {
   res.json({ message: 'Foto eliminada' });
 });
 
+// Ruta protegida - eliminar foto (como admin) por id de usuario
+router.delete('/foto/:id/admin', verifyToken, requireSuperadmin, async (req, res) => {
+  const foto = await Foto.findByPk(req.params.id);
+  if (!foto) return res.status(404).json({ error: 'Foto no encontrada' });
+
+  const filepath = path.join(__dirname, '../', foto.url);
+  if (fs.existsSync(filepath)) fs.unlinkSync(filepath);
+
+  await foto.destroy();
+  res.json({ message: 'Foto eliminada por admin' });
+});
+
 // Ruta protegida - actualizar usuario
 router.put('/usuario', verifyToken, async (req, res) => {
   const { nombre, email, password } = req.body;
