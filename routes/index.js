@@ -48,7 +48,7 @@ router.post('/usuarios', async (req, res) => {
 
 // Obtener todos los usuarios (solo superadmin)
 router.get('/usuarios', verifyToken, requireSuperadmin, async (req, res) => {
-  const usuarios = await User.findAll({ attributes: ['id', 'nombre', 'email', 'rol', 'linkId', 'token','createdAt'] });
+  const usuarios = await User.findAll({ attributes: ['id', 'nombre', 'email', 'rol', 'linkId', 'createdAt', 'token'] });
   res.json({ usuarios });
 });
 
@@ -93,7 +93,7 @@ router.post('/upload', verifyToken, async (req, res) => {
 
     await file.mv(filepath);
     const nuevaFoto = await Foto.create({ url: `/uploads/${filename}`, UserId: usuario.id });
-    emitToToken(token, nuevaFoto); // <== notificar por socket
+    emitToToken(token, nuevaFoto);
     return nuevaFoto;
   };
 
@@ -130,10 +130,17 @@ router.get('/usuario/fotos', verifyToken, async (req, res) => {
   res.json({ fotos });
 });
 
-// Ruta protegida - eliminar foto
+// Ruta protegida - eliminar foto (usuario puede borrar sus fotos o superadmin cualquiera)
 router.delete('/foto/:id', verifyToken, async (req, res) => {
-  const foto = await Foto.findOne({ where: { id: req.params.id, UserId: req.user.id } });
-  if (!foto) return res.status(404).json({ error: 'Foto no encontrada o no autorizada' });
+  const foto = await Foto.findByPk(req.params.id);
+
+  if (!foto) return res.status(404).json({ error: 'Foto no encontrada' });
+
+  const usuario = await User.findByPk(req.user.id);
+
+  if (foto.UserId !== req.user.id && usuario.rol !== 'superadmin') {
+    return res.status(403).json({ error: 'No autorizado para eliminar esta foto' });
+  }
 
   const filepath = path.join(__dirname, '../', foto.url);
   if (fs.existsSync(filepath)) fs.unlinkSync(filepath);
