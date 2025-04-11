@@ -1,0 +1,2 @@
+nombre,email,password,rol,linkId,token,createdAt,updatedAt
+Luis Alejandro,luis@fotoglow.com,hashed_password_123,superadmin,qpmnvm,token123,2025-04-08T05:09:45.701473,2025-04-08T05:09:45.701480

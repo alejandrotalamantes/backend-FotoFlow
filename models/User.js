@@ -1,4 +1,3 @@
-// backend/models/User.js
 const { DataTypes } = require('sequelize');
 const bcrypt = require('bcrypt');
 
@@ -7,7 +6,7 @@ module.exports = (sequelize) => {
     nombre: DataTypes.STRING,
     email: DataTypes.STRING,
     rol: DataTypes.STRING,
-    password: DataTypes.STRING, // ✅ FALTA ESTO
+    password: DataTypes.STRING,
     token: {
       type: DataTypes.STRING,
       defaultValue: () => require('uuid').v4(),
@@ -19,13 +18,17 @@ module.exports = (sequelize) => {
     },
   });
 
-  // ✅ Hash automático al crear
   User.beforeCreate(async (user) => {
     if (user.password) {
       const salt = await bcrypt.genSalt(10);
       user.password = await bcrypt.hash(user.password, salt);
     }
   });
+
+  User.associate = (models) => {
+    User.hasMany(models.Evento, { foreignKey: { allowNull: false } }); // ✅ aquí el cambio
+    User.hasMany(models.Foto); // opcional
+  };
 
   return User;
 };
