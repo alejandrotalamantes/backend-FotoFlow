@@ -14,10 +14,17 @@ const { initSocket, joinRoom } = require('./socket');
 const app = express();
 const server = http.createServer(app);
 
+const allowedOrigins = [
+  'http://localhost:5173',
+  'http://127.0.0.1:5173',      
+  'https://4a42-189-182-198-181.ngrok-free.app', // <- tu ngrok u otra URL
+  'https://photobooth.soluciomax.com' // <- si accedes desde producción
+];
+
 // === Configurar Socket.IO ===
 const io = new Server(server, {
   cors: {
-    origin: HOST,
+    origin: allowedOrigins,
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     credentials: true,
   },
@@ -36,11 +43,16 @@ initSocket(io);
 
 // === Middlewares ===
 app.use(cors({
-  origin: process.env.NODE_ENV === 'production'
-    ? `*` // o dominio real
-    : `http://${HOST}:5173`,
-  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      console.warn('❌ Origen no permitido por CORS:', origin);
+      callback(new Error('No permitido por CORS'));
+    }
+  },
   credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
 }));
 
 
